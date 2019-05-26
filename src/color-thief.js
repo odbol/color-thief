@@ -24,16 +24,54 @@
   It also simplifies some of the canvas context manipulation
   with a set of helper functions.
 */
+
+
+var Canvas;
+var Image;
+var fs;
+
+const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
+const isWebWorker =
+    typeof self === 'object' &&
+    self.constructor &&
+    self.constructor.name === 'DedicatedWorkerGlobalScope';
+
+const isNode =
+    typeof process !== 'undefined' &&
+    process.versions != null &&
+    process.versions.node != null;
+
+if (isNode) {
+    Canvas = require('canvas');
+    Image = Canvas.Image;
+    fs = require('fs');
+}
+
 var CanvasImage = function (image) {
-    this.canvas  = document.createElement('canvas');
+    // In node we use strings as path to an image,
+    // whereas in the browser we use an image element.
+    if (isNode) {
+        this.canvas = new Canvas()
+        var img = new Image;
+
+        if (image instanceof Buffer) {
+            img.src = image
+        } else {
+            img.src = fs.readFileSync(image);
+        }
+    } else {
+        this.canvas = document.createElement('canvas');
+        document.body.appendChild(this.canvas);
+        var img = image;
+    }
+
     this.context = this.canvas.getContext('2d');
 
-    document.body.appendChild(this.canvas);
+    this.width = this.canvas.width = img.width;
+    this.height = this.canvas.height = img.height;
 
-    this.width  = this.canvas.width  = image.width;
-    this.height = this.canvas.height = image.height;
-
-    this.context.drawImage(image, 0, 0, this.width, this.height);
+    this.context.drawImage(img, 0, 0, this.width, this.height);
 };
 
 CanvasImage.prototype.clear = function () {
