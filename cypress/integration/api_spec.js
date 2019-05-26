@@ -9,7 +9,7 @@ function rgbCount(text) {
 }
 
 describe('getColor()', function() {
-	beforeEach(function() {
+	before(function() {
         cy.visit('http://localhost:8080');
     })
 
